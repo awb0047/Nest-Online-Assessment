@@ -6,12 +6,13 @@ const {
     GraphQLInt,
     GraphQLString,
 } = require('graphql');
+const { PubSub } = require('graphql-subscriptions');
 
 const { EmployeeType } = require('./TypeDefs/EmployeeType.js');
 const { RecognitionType } = require('./TypeDefs/RecognitionType');
-const e = require('express');
-
 const db = require('../mockdata').default;
+
+const pubsub = new PubSub();
 
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
@@ -77,13 +78,28 @@ const RootMutation = new GraphQLObjectType({
                     time: curTime.toUTCString()
                 }
                 db.recognitions.push(recognition);
+                pubsub.publish('recognitionCreated', recognition)
                 return recognition;
             }
         }
     })
 });
 
+const RootSubscription = new GraphQLObjectType({
+    name: 'SubscriptionType',
+    description: 'Root Subscription for Schema',
+    fields: () => ({
+        recognitionCreated: {
+            type: RecognitionType,
+            description: 'Subscription for new recognitions added',
+            resolve: (recognition) => recognition,
+            subscribe: () => pubsub.asyncIterator(['recognitionCreated'])
+        }
+    })
+});
+
 module.exports = new GraphQLSchema({
   query: RootQuery,
-  mutation: RootMutation
+  mutation: RootMutation,
+  subscription: RootSubscription
 });
