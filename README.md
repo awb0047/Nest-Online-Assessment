@@ -76,3 +76,6 @@ A fleshed out implimentation of this should utilize slacks API (https://api.slac
 #### Batching Real-Time updates
 The current subscription model would send out updates instantly, assuming connection to a socket. However, that connection might not always be existent, and we still want to notify employees when they return online, AKA reestablish a connection. There should be a cache located in the database that stores messages lacking a persistant connection, and should retry in intervals. Storing on database would protect these notifications in case of a server failure.
 
+#### Lack of Apollo
+Further into the developement and research into this task, I realized that it would have been easier to use Apollo, especially for subscriptions. Apollos built in dash makes connecting to the web socket easy for testing live notifications.
+
